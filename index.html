@@ -20,45 +20,41 @@
 
     input, textarea{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:1px solid #e5e7eb;font-size:14px}
 
-    button{margin-top:12px;width:100%;padding:12px;border:none;border-radius:10px;background:#6366f1;color:white;font-weight:600;cursor:pointer;transition:.2s}
+    button{margin-top:12px;width:100%;padding:12px;border:none;border-radius:10px;background:#6366f1;color:white;font-weight:600;cursor:pointer}
     button:hover{background:#4f46e5}
 
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:15px}
 
-    .group-card{background:white;border-radius:16px;padding:15px;box-shadow:0 8px 20px rgba(0,0,0,.06);display:flex;flex-direction:column;justify-content:space-between}
-    .group-card h3{margin:0;font-size:18px}
+    .group-card{background:white;border-radius:16px;padding:15px;box-shadow:0 8px 20px rgba(0,0,0,.06)}
+    .group-card h3{margin:0}
     .group-card p{font-size:13px;color:#6b7280}
 
-    .tag{display:inline-block;background:#eef2ff;color:#4338ca;padding:4px 10px;border-radius:999px;font-size:11px;margin-top:8px}
+    .tag{background:#eef2ff;color:#4338ca;padding:4px 10px;border-radius:999px;font-size:11px;margin-top:8px;display:inline-block}
 
-    .actions{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+    .actions{margin-top:10px;display:flex;gap:8px}
 
-    .join{background:#22c55e;color:white;padding:6px 10px;border-radius:8px;font-size:13px}
-
-    .empty{text-align:center;color:#6b7280;padding:30px}
+    .join{background:#22c55e;color:white;padding:6px 10px;border-radius:8px}
   </style>
 </head>
 <body>
 
   <div class="hero">
-    <button onclick="login()" style="margin-top:10px;">Login Admin</button>
+    <button onclick="login()">Login Admin</button>
     <h1>🚀 Directorio de Comunidades</h1>
     <p>Publica tu grupo y consigue nuevos miembros gratis</p>
   </div>
 
   <div class="container">
-
     <div class="card">
       <h3>Agregar comunidad</h3>
       <input id="name" placeholder="Nombre del grupo">
       <textarea id="description" placeholder="Descripción"></textarea>
       <input id="link" placeholder="Link de WhatsApp">
-      <input id="category" placeholder="Categoría (ej: gaming, estudio)">
+      <input id="category" placeholder="Categoría">
       <button onclick="addCommunity()">Publicar</button>
     </div>
 
     <div id="list" class="grid"></div>
-
   </div>
 
 <!-- Firebase -->
@@ -67,32 +63,25 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 <script>
-// 🔥 CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyCSCAomgmEdPu8pBQsI5POqZjBBQgQ3vhA",
   authDomain: "grupos-whatsapp-6da77.firebaseapp.com",
   projectId: "grupos-whatsapp-6da77",
-  storageBucket: "grupos-whatsapp-6da77.firebasestorage.app",
-  messagingSenderId: "523898705855",
-  appId: "1:523898705855:web:5ba8d33f1e12707904b30a"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// 🔐 ADMIN
 const ADMIN_EMAIL = "dienyalexandra2017@gmail.com";
 let currentUser = null;
 
+// LOGIN
 function login(){
   const provider = new firebase.auth.GoogleAuthProvider();
   firebase.auth().signInWithRedirect(provider);
-    .then(result => {
-      currentUser = result.user;
-      alert("Sesión iniciada como " + currentUser.email);
-    });
 }
 
+// Detectar usuario y cargar datos
 firebase.auth().onAuthStateChanged(user => {
   currentUser = user;
 
@@ -100,18 +89,16 @@ firebase.auth().onAuthStateChanged(user => {
     .orderBy("createdAt","desc")
     .onSnapshot(render);
 });
-firebase.auth().getRedirectResult()
-  .then(result => {
-    if(result.user){
-      currentUser = result.user;
-      alert("Sesión iniciada como " + currentUser.email);
-    }
-  })
-  .catch(error => {
-    console.error(error);
-  });
 
-// ➕ AÑADIR GRUPO
+// Detectar resultado login
+firebase.auth().getRedirectResult().then(result => {
+  if(result.user){
+    currentUser = result.user;
+    alert("Sesión iniciada como " + currentUser.email);
+  }
+});
+
+// AGREGAR GRUPO
 async function addCommunity(){
   const name = document.getElementById('name').value.trim();
   const description = document.getElementById('description').value.trim();
@@ -123,27 +110,18 @@ async function addCommunity(){
   }
 
   if(!link.startsWith("https://chat.whatsapp.com/")){
-    alert("❌ Solo enlaces válidos de WhatsApp");
+    alert("Solo links de WhatsApp");
     return;
   }
 
   if(link.length < 30){
-    alert("❌ Link inválido");
+    alert("Link inválido");
     return;
   }
 
-  const bannedWords = ["sexo","porn","apuestas","casino"];
-  const text = (name + description).toLowerCase();
-
-  for(let word of bannedWords){
-    if(text.includes(word)){
-      alert("❌ Contenido no permitido");
-      return;
-    }
-  }
-
-  if(!name || !description){
-    alert("Completa todos los campos");
+  const bannedWords = ["sexo","porn","casino"];
+  if((name + description).toLowerCase().includes(bannedWords)){
+    alert("Contenido no permitido");
     return;
   }
 
@@ -152,7 +130,7 @@ async function addCommunity(){
     .get();
 
   if(!snapshot.empty){
-    alert("⚠️ Este grupo ya existe");
+    alert("Este grupo ya existe");
     return;
   }
 
@@ -160,45 +138,33 @@ async function addCommunity(){
     name, description, link, category,
     createdAt: Date.now()
   });
-
-  document.getElementById('name').value='';
-  document.getElementById('description').value='';
-  document.getElementById('link').value='';
-  document.getElementById('category').value='';
 }
 
-// 🗑 ELIMINAR
+// ELIMINAR
 function deleteGroup(id){
-  if(confirm("¿Eliminar este grupo?")){
+  if(confirm("¿Eliminar?")){
     db.collection("communities").doc(id).delete();
   }
 }
 
-// 🎨 RENDER
+// RENDER
 function render(snapshot){
   const list = document.getElementById('list');
-  list.innerHTML='';
-
-  if(snapshot.empty){
-    list.innerHTML = '<div class="empty">Aún no hay comunidades 🚀</div>';
-    return;
-  }
+  list.innerHTML = "";
 
   snapshot.forEach(doc => {
     const c = doc.data();
 
     const div = document.createElement('div');
-    div.className='group-card';
+    div.className = "group-card";
 
     div.innerHTML = `
-      <div>
-        <h3>${c.name}</h3>
-        <p>${c.description}</p>
-        <div class="tag">${c.category || 'General'}</div>
-      </div>
+      <h3>${c.name}</h3>
+      <p>${c.description}</p>
+      <div class="tag">${c.category || 'General'}</div>
 
       <div class="actions">
-        <a href="${encodeURI(c.link)}" target="_blank" class="join">Unirse</a>
+        <a href="${c.link}" target="_blank" class="join">Unirse</a>
 
         ${currentUser && currentUser.email === ADMIN_EMAIL
           ? `<button onclick="deleteGroup('${doc.id}')">Eliminar</button>`
@@ -209,9 +175,6 @@ function render(snapshot){
     list.appendChild(div);
   });
 }
-
-// 🔄 TIEMPO REAL
-
 </script>
 
 </body>
