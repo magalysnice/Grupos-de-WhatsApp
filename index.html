@@ -1,3 +1,22 @@
+const ADMIN_EMAIL = "dienyalexandra2017@gmail.com";
+let currentUser = null;
+
+function login(){
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  firebase.auth().signInWithPopup(provider)
+    .then(result => {
+      currentUser = result.user;
+      alert("Sesión iniciada como " + currentUser.email);
+    });
+}
+
+firebase.auth().onAuthStateChanged(user => {
+  if(user){
+    currentUser = user;
+  }
+});
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -41,6 +60,9 @@
 <body>
 
   <div class="hero">
+<button onclick="login()" style="margin-top:10px;">
+  Login Admin
+</button>
     <h1>🚀 Directorio de Comunidades</h1>
     <p>Publica tu grupo y consigue nuevos miembros gratis</p>
   </div>
@@ -63,6 +85,7 @@
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 <script>
 const firebaseConfig = {
@@ -155,19 +178,22 @@ function render(snapshot){
     div.className='group-card';
 
     div.innerHTML = `
-      <div>
-        <h3>${c.name}</h3>
-        <p>${c.description}</p>
-        <div class="tag">${c.category || 'General'}</div>
-      </div>
-      <div class="actions">
-        <a href="${encodeURI(c.link)}" target="_blank" rel="noopener noreferrer" class="join">Unirse</a>
-      </div>
-    `;
+  <div>
+    <h3>${c.name}</h3>
+    <p>${c.description}</p>
+    <div class="tag">${c.category || 'General'}</div>
+  </div>
 
-    list.appendChild(div);
-  });
-}
+  <div class="actions">
+    <a href="${encodeURI(c.link)}" target="_blank" class="join">Unirse</a>
+
+    ${
+      currentUser && currentUser.email === ADMIN_EMAIL
+      ? `<button onclick="deleteGroup('${doc.id}')">Eliminar</button>`
+      : ""
+    }
+  </div>
+`;
 
 // Escuchar cambios en tiempo real
 db.collection("communities")
@@ -177,3 +203,9 @@ db.collection("communities")
 
 </body>
 </html>
+
+function deleteGroup(id){
+  if(confirm("¿Eliminar este grupo?")){
+    db.collection("communities").doc(id).delete();
+  }
+}
