@@ -78,10 +78,37 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-function addCommunity(){
+async function addCommunity(){
   const name = document.getElementById('name').value.trim();
   const description = document.getElementById('description').value.trim();
   let link = document.getElementById('link').value.trim();
+
+// asegurar formato
+if(!link.startsWith("https://")){
+  link = "https://" + link;
+}
+
+// validar que sea de WhatsApp
+if(!link.startsWith("https://chat.whatsapp.com/")){
+  alert("❌ Solo se permiten enlaces de WhatsApp");
+  return;
+}
+
+// evitar links sospechosos
+if(link.length < 30){
+  alert("❌ Link inválido");
+  return;
+}
+const bannedWords = ["sexo", "porn", "apuestas", "casino"];
+
+const text = (name + description).toLowerCase();
+
+for(let word of bannedWords){
+  if(text.includes(word)){
+    alert("❌ Contenido no permitido");
+    return;
+  }
+}
 
 // asegurar formato correcto
 if(!link.startsWith("https://")){
@@ -93,7 +120,14 @@ if(!link.startsWith("https://")){
     alert('Completa todos los campos obligatorios');
     return;
   }
+  const snapshot = await db.collection("communities")
+  .where("link", "==", link)
+  .get();
 
+if(!snapshot.empty){
+  alert("⚠️ Este grupo ya existe");
+  return;
+} 
   db.collection("communities").add({
     name, description, link, category,
     createdAt: Date.now()
