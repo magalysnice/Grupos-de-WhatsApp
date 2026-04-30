@@ -1,0 +1,64 @@
+// App React + Firebase (versión premium)
+              <Input
+                placeholder="Categoría"
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+              />
+              <Button type="submit">Publicar</Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Lista */}
+        <div className="grid gap-4">
+          {communities.map((c) => (
+            <motion.div
+              key={c.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card>
+                <CardContent className="p-4">
+                  <h2 className="text-lg font-bold">{c.name}</h2>
+                  <p className="text-sm text-gray-600">{c.description}</p>
+                  <div className="flex justify-between mt-3">
+                    <a href={c.link} target="_blank" className="text-blue-500">
+                      Unirse
+                    </a>
+                    <span className="text-xs bg-gray-200 px-2 rounded">
+                      {c.category}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+/*
+
+🔥 PASOS PARA HACERLA REAL:
+
+1. Crear proyecto en Firebase
+2. Activar:
+   - Authentication (Google)
+   - Firestore Database
+3. Copiar config en firebaseConfig
+4. Instalar deps:
+   npm install firebase framer-motion
+5. Ejecutar app:
+   npm run dev
+
+💡 IDEAS PRO:
+- Likes a comunidades
+- Comentarios
+- Sistema de reportes
+- Ranking (top comunidades)
+- Filtros avanzados
+
+*/
