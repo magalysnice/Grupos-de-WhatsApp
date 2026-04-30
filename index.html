@@ -10,99 +10,32 @@
     body{margin:0;font-family:'Inter',sans-serif;background:#0f172a;color:#0f172a}
     a{text-decoration:none}
 
-    .hero{
-      background:linear-gradient(135deg,#6366f1,#22c55e);
-      color:white;
-      padding:40px 20px;
-      text-align:center;
-    }
-
+    .hero{background:linear-gradient(135deg,#6366f1,#22c55e);color:white;padding:40px 20px;text-align:center}
     .hero h1{margin:0;font-size:32px}
     .hero p{opacity:.9;margin-top:10px}
 
     .container{max-width:1000px;margin:auto;padding:20px}
 
-    .card{
-      background:white;
-      border-radius:16px;
-      padding:20px;
-      box-shadow:0 10px 25px rgba(0,0,0,.08);
-      margin-bottom:20px;
-    }
+    .card{background:white;border-radius:16px;padding:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:20px}
 
-    input, textarea{
-      width:100%;
-      padding:12px;
-      margin-top:10px;
-      border-radius:10px;
-      border:1px solid #e5e7eb;
-      font-size:14px;
-    }
+    input, textarea{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:1px solid #e5e7eb;font-size:14px}
 
-    button{
-      margin-top:12px;
-      width:100%;
-      padding:12px;
-      border:none;
-      border-radius:10px;
-      background:#6366f1;
-      color:white;
-      font-weight:600;
-      cursor:pointer;
-      transition:.2s;
-    }
-
+    button{margin-top:12px;width:100%;padding:12px;border:none;border-radius:10px;background:#6366f1;color:white;font-weight:600;cursor:pointer;transition:.2s}
     button:hover{background:#4f46e5}
 
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-      gap:15px;
-    }
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:15px}
 
-    .group-card{
-      background:white;
-      border-radius:16px;
-      padding:15px;
-      box-shadow:0 8px 20px rgba(0,0,0,.06);
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-    }
-
+    .group-card{background:white;border-radius:16px;padding:15px;box-shadow:0 8px 20px rgba(0,0,0,.06);display:flex;flex-direction:column;justify-content:space-between}
     .group-card h3{margin:0;font-size:18px}
     .group-card p{font-size:13px;color:#6b7280}
 
-    .tag{
-      display:inline-block;
-      background:#eef2ff;
-      color:#4338ca;
-      padding:4px 10px;
-      border-radius:999px;
-      font-size:11px;
-      margin-top:8px;
-    }
+    .tag{display:inline-block;background:#eef2ff;color:#4338ca;padding:4px 10px;border-radius:999px;font-size:11px;margin-top:8px}
 
-    .actions{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-top:10px;
-    }
+    .actions{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
 
-    .join{
-      background:#22c55e;
-      color:white;
-      padding:6px 10px;
-      border-radius:8px;
-      font-size:13px;
-    }
+    .join{background:#22c55e;color:white;padding:6px 10px;border-radius:8px;font-size:13px}
 
-    .empty{
-      text-align:center;
-      color:#6b7280;
-      padding:30px;
-    }
+    .empty{text-align:center;color:#6b7280;padding:30px}
   </style>
 </head>
 <body>
@@ -127,12 +60,23 @@
 
   </div>
 
-<script>
-let communities = JSON.parse(localStorage.getItem('communities')) || [];
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
-function save(){
-  localStorage.setItem('communities', JSON.stringify(communities));
-}
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCSCAomgmEdPu8pBQsI5POqZjBBQgQ3vhA",
+  authDomain: "grupos-whatsapp-6da77.firebaseapp.com",
+  projectId: "grupos-whatsapp-6da77",
+  storageBucket: "grupos-whatsapp-6da77.firebasestorage.app",
+  messagingSenderId: "523898705855",
+  appId: "1:523898705855:web:5ba8d33f1e12707904b30a",
+  measurementId: "G-K0XGD7MF6B"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 function addCommunity(){
   const name = document.getElementById('name').value.trim();
@@ -145,9 +89,10 @@ function addCommunity(){
     return;
   }
 
-  communities.unshift({name, description, link, category});
-  save();
-  render();
+  db.collection("communities").add({
+    name, description, link, category,
+    createdAt: Date.now()
+  });
 
   document.getElementById('name').value='';
   document.getElementById('description').value='';
@@ -155,16 +100,18 @@ function addCommunity(){
   document.getElementById('category').value='';
 }
 
-function render(){
+function render(snapshot){
   const list = document.getElementById('list');
   list.innerHTML='';
 
-  if(communities.length === 0){
+  if(snapshot.empty){
     list.innerHTML = '<div class="empty">Aún no hay comunidades. Sé el primero 🚀</div>';
     return;
   }
 
-  communities.forEach(c => {
+  snapshot.forEach(doc => {
+    const c = doc.data();
+
     const div = document.createElement('div');
     div.className='group-card';
 
@@ -183,7 +130,10 @@ function render(){
   });
 }
 
-render();
+// Escuchar cambios en tiempo real
+db.collection("communities")
+.orderBy("createdAt","desc")
+.onSnapshot(render);
 </script>
 
 </body>
