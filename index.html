@@ -86,7 +86,7 @@ let currentUser = null;
 
 function login(){
   const provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider)
+  firebase.auth().signInWithRedirect(provider);
     .then(result => {
       currentUser = result.user;
       alert("Sesión iniciada como " + currentUser.email);
@@ -94,8 +94,22 @@ function login(){
 }
 
 firebase.auth().onAuthStateChanged(user => {
-  if(user){ currentUser = user; }
+  currentUser = user;
+
+  db.collection("communities")
+    .orderBy("createdAt","desc")
+    .onSnapshot(render);
 });
+firebase.auth().getRedirectResult()
+  .then(result => {
+    if(result.user){
+      currentUser = result.user;
+      alert("Sesión iniciada como " + currentUser.email);
+    }
+  })
+  .catch(error => {
+    console.error(error);
+  });
 
 // ➕ AÑADIR GRUPO
 async function addCommunity(){
@@ -197,9 +211,6 @@ function render(snapshot){
 }
 
 // 🔄 TIEMPO REAL
-db.collection("communities")
-.orderBy("createdAt","desc")
-.onSnapshot(render);
 
 </script>
 
