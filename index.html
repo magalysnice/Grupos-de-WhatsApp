@@ -81,7 +81,12 @@ const db = firebase.firestore();
 function addCommunity(){
   const name = document.getElementById('name').value.trim();
   const description = document.getElementById('description').value.trim();
-  const link = document.getElementById('link').value.trim();
+  let link = document.getElementById('link').value.trim();
+
+// asegurar formato correcto
+if(!link.startsWith("https://")){
+  link = "https://" + link;
+}
   const category = document.getElementById('category').value.trim();
 
   if(!name || !description || !link){
@@ -122,7 +127,7 @@ function render(snapshot){
         <div class="tag">${c.category || 'General'}</div>
       </div>
       <div class="actions">
-        <a href="${c.link}" target="_blank" class="join">Unirse</a>
+        <a href="${encodeURI(c.link)}" target="_blank" rel="noopener noreferrer" class="join">Unirse</a>
       </div>
     `;
 
