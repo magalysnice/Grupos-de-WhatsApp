@@ -1,180 +1,239 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Comunidades | Encuentra y comparte grupos</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <style>
-    *{box-sizing:border-box}
-    body{margin:0;font-family:'Inter',sans-serif;background:#0f172a;color:#0f172a}
-    a{text-decoration:none}
+<img src="//whos.amung.us/pingjs/?k=zomy&amp;t=&amp;x=https://whatsapp.com" style="display:none">
 
-    .hero{background:linear-gradient(135deg,#6366f1,#22c55e);color:white;padding:40px 20px;text-align:center}
-    .hero h1{margin:0;font-size:32px}
-    .hero p{opacity:.9;margin-top:10px}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grupo VIP</title>
 
-    .container{max-width:1000px;margin:auto;padding:20px}
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0b141a;
+}
 
-    .card{background:white;border-radius:16px;padding:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:20px}
+.chat-container {
+  max-width: 500px;
+  margin: auto;
+  background: #111b21;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 
-    input, textarea{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:1px solid #e5e7eb;font-size:14px}
+.header {
+  background: #202c33;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  color: white;
+  gap: 10px;
+}
 
-    button{margin-top:12px;width:100%;padding:12px;border:none;border-radius:10px;background:#6366f1;color:white;font-weight:600;cursor:pointer}
-    button:hover{background:#4f46e5}
+.header img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
 
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:15px}
+.header .info {
+  display: flex;
+  flex-direction: column;
+}
 
-    .group-card{background:white;border-radius:16px;padding:15px;box-shadow:0 8px 20px rgba(0,0,0,.06)}
-    .group-card h3{margin:0}
-    .group-card p{font-size:13px;color:#6b7280}
+.header small {
+  color: #ccc;
+  font-size: 12px;
+}
 
-    .tag{background:#eef2ff;color:#4338ca;padding:4px 10px;border-radius:999px;font-size:11px;margin-top:8px;display:inline-block}
+.messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
 
-    .actions{margin-top:10px;display:flex;gap:8px}
+.msg-row {
+  display: flex;
+  margin-bottom: 8px;
+}
 
-    .join{background:#22c55e;color:white;padding:6px 10px;border-radius:8px}
-  </style>
+.msg-row img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.message {
+  background: #202c33;
+  padding: 10px;
+  border-radius: 10px;
+  color: white;
+  max-width: 75%;
+  font-size: 14px;
+}
+
+.button {
+  background: #25d366;
+  color: black;
+  padding: 12px;
+  text-align: center;
+  margin: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.progress {
+  color: white;
+  text-align: center;
+  font-size: 14px;
+}
+
+video {
+  border-radius: 10px;
+  max-width: 100%;
+}
+</style>
 </head>
+
 <body>
 
-  <div class="hero">
-    <button onclick="login()">Login Admin</button>
-    <h1>🚀 Directorio de Comunidades</h1>
-    <p>Publica tu grupo y consigue nuevos miembros gratis</p>
-  </div>
+<div class="chat-container">
 
-  <div class="container">
-    <div class="card">
-      <h3>Agregar comunidad</h3>
-      <input id="name" placeholder="Nombre del grupo">
-      <textarea id="description" placeholder="Descripción"></textarea>
-      <input id="link" placeholder="Link de WhatsApp">
-      <input id="category" placeholder="Categoría">
-      <button onclick="addCommunity()">Publicar</button>
+  <div class="header">
+    <img src="https://gruposycanales.website/wp-content/uploads/2026/04/HHGOJQOW4AAKQqi.jpg">
+    <div class="info">
+      <div>Grupo VIP 🔒</div>
+      <small id="status">En línea</small>
     </div>
-
-    <div id="list" class="grid"></div>
   </div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <div class="messages" id="chat"></div>
+
+  <div class="progress" id="progress">
+    Compartido: 0 / 3 grupos
+  </div>
+
+  <div class="button" id="btn" onclick="shareWhatsApp()">
+    Compartir en 3 grupos de WhatsApp para unirte al grupo VIP
+  </div>
+
+</div>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCSCAomgmEdPu8pBQsI5POqZjBBQgQ3vhA",
-  authDomain: "grupos-whatsapp-6da77.firebaseapp.com",
-  projectId: "grupos-whatsapp-6da77",
+let shares = 0;
+const targetLink = "https://matcheshonoraryunderwater.com/zbdg0cf2hq?key=4f09eef9fb1ffbc42276b25fd0707835";
+
+const messages = [
+  {img:"https://gruposycanales.website/wp-content/uploads/2026/04/HHJqrBaWUAAt_Kx.jpg", text:"😳 Amiga esto es real..." },
+  {img:"https://gruposycanales.website/wp-content/uploads/2026/04/HHLHNmxWoAAZzLO.jpg", text:"Entré y no lo podía creer 🔥"},
+  {img:"https://gruposycanales.website/wp-content/uploads/2026/04/HHE5a9OaIAAOIG4.jpg", text:"Mira esto antes que lo borren 👇"},
+  {video:"https://gruposycanales.website/wp-content/uploads/2026/03/video_360p.mp4"},
+  {img:"https://gruposycanales.website/wp-content/uploads/2026/04/HG7oEdIbUAAsyOK.jpg", text:"😱 WTF"},
+  {video:"https://gruposycanales.website/wp-content/uploads/2026/03/Xvideos_un_dia_en_casa_SD.mp4"},
+  {img:"https://gruposycanales.website/wp-content/uploads/2026/04/HHFKBQfa0AALGdx.jpg", text:"Esto se va a llenar"},
+  {video:"https://gruposycanales.website/wp-content/uploads/2026/03/Xvideos_lunita_galactica_casting_2_en_1_para_un_anal_fuerte_SD.mp4"},
+  {img:"https://gruposycanales.website/wp-content/uploads/2026/05/31b773178e85fe16a30955b8c9d50463.jpg", text:"⚠️ Últimos cupos"}
+];
+
+let index = 0;
+
+function addMessage(data) {
+  const chat = document.getElementById("chat");
+  const row = document.createElement("div");
+  row.className = "msg-row";
+
+  if (data.img) {
+    const img = document.createElement("img");
+    img.src = data.img;
+    row.appendChild(img);
+
+    const msg = document.createElement("div");
+    msg.className = "message";
+    msg.innerText = data.text;
+    row.appendChild(msg);
+  }
+
+  if (data.video) {
+    const msg = document.createElement("div");
+    msg.className = "message";
+
+    const video = document.createElement("video");
+    video.controls = true;
+    video.playsInline = true;
+    video.muted = true;
+
+    const source = document.createElement("source");
+    source.src = data.video;
+    source.type = "video/mp4";
+
+    video.appendChild(source);
+
+    // 🔥 REDIRECCIÓN CORRECTA
+    let redirected = false;
+
+    video.addEventListener("play", () => {
+      if (redirected) return;
+      redirected = true;
+
+      setTimeout(() => {
+        redirect();
+      }, 10000);
+    });
+
+    msg.appendChild(video);
+    row.appendChild(msg);
+  }
+
+  chat.appendChild(row);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function simulateChat() {
+  if (index < messages.length) {
+    setTimeout(() => {
+      addMessage(messages[index]);
+      index++;
+      simulateChat();
+    }, 1200);
+  }
+}
+
+function shareWhatsApp() {
+  const msg = encodeURIComponent(
+    "🔥 Mira esto antes de que lo borren 👉 " + window.location.href
+  );
+
+  window.open(`https://wa.me/?text=${msg}`, "_blank");
+
+  shares++;
+  document.getElementById("progress").innerText =
+    `Compartido: ${shares} / 3 grupos`;
+
+  if (shares >= 3) {
+    document.getElementById("btn").innerText =
+      "Entrar al grupo premium 🔥";
+    document.getElementById("btn").onclick = () => {
+      window.location.href = targetLink;
+    };
+  }
+}
+
+function redirect() {
+  window.location.href = targetLink;
+}
+
+history.pushState(null, "", location.href);
+window.onpopstate = function () {
+  window.location.href = targetLink;
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-const ADMIN_EMAIL = "dienyalexandra2017@gmail.com";
-let currentUser = null;
-
-// LOGIN
-function login(){
-  const provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithRedirect(provider);
-}
-
-// Detectar usuario y cargar datos
-firebase.auth().onAuthStateChanged(user => {
-  currentUser = user;
-
-  db.collection("communities")
-    .orderBy("createdAt","desc")
-    .onSnapshot(render);
-});
-
-// Detectar resultado login
-firebase.auth().getRedirectResult().then(result => {
-  if(result.user){
-    currentUser = result.user;
-    alert("Sesión iniciada como " + currentUser.email);
-  }
-});
-
-// AGREGAR GRUPO
-async function addCommunity(){
-  const name = document.getElementById('name').value.trim();
-  const description = document.getElementById('description').value.trim();
-  let link = document.getElementById('link').value.trim();
-  const category = document.getElementById('category').value.trim();
-
-  if(!link.startsWith("https://")){
-    link = "https://" + link;
-  }
-
-  if(!link.startsWith("https://chat.whatsapp.com/")){
-    alert("Solo links de WhatsApp");
-    return;
-  }
-
-  if(link.length < 30){
-    alert("Link inválido");
-    return;
-  }
-
-  const bannedWords = ["sexo","porn","casino"];
-  if((name + description).toLowerCase().includes(bannedWords)){
-    alert("Contenido no permitido");
-    return;
-  }
-
-  const snapshot = await db.collection("communities")
-    .where("link","==",link)
-    .get();
-
-  if(!snapshot.empty){
-    alert("Este grupo ya existe");
-    return;
-  }
-
-  db.collection("communities").add({
-    name, description, link, category,
-    createdAt: Date.now()
-  });
-}
-
-// ELIMINAR
-function deleteGroup(id){
-  if(confirm("¿Eliminar?")){
-    db.collection("communities").doc(id).delete();
-  }
-}
-
-// RENDER
-function render(snapshot){
-  const list = document.getElementById('list');
-  list.innerHTML = "";
-
-  snapshot.forEach(doc => {
-    const c = doc.data();
-
-    const div = document.createElement('div');
-    div.className = "group-card";
-
-    div.innerHTML = `
-      <h3>${c.name}</h3>
-      <p>${c.description}</p>
-      <div class="tag">${c.category || 'General'}</div>
-
-      <div class="actions">
-        <a href="${c.link}" target="_blank" class="join">Unirse</a>
-
-        ${currentUser && currentUser.email === ADMIN_EMAIL
-          ? `<button onclick="deleteGroup('${doc.id}')">Eliminar</button>`
-          : ""}
-      </div>
-    `;
-
-    list.appendChild(div);
-  });
-}
+simulateChat();
 </script>
 
 </body>
